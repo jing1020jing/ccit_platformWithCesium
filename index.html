@@ -4,14 +4,45 @@
   <meta charset="utf-8">
   <!-- Include the CesiumJS JavaScript and CSS files -->
   <script src="https://cesium.com/downloads/cesiumjs/releases/1.108/Build/Cesium/Cesium.js"></script>
+  
   <link href="https://cesium.com/downloads/cesiumjs/releases/1.108/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  
+  <style>
+  
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .fullscreen-container {
+        width: 100%;
+        height: 100%;
+    }
+
+  </style>
+  
 </head>
 
 <body>
 
-  <button id="btnFlyToTaipei" type="button">前往台北</button>
-  <button id="btnFlyToTaichung" type="button">前往台中</button>
-  <button id="btnFlyToKaohsiung" type="button">前往高雄</button>
+  <div id="toolbar" class="toolbar">
+    <div id="cesiumContainer" class="fullscreen-container">
+      <button id="btnFlyToTaipei" type="button">前往台北</button>
+      <button id="btnFlyToTaichung" type="button">前往台中</button>
+      <button id="btnFlyToKaohsiung" type="button">前往高雄</button>
+    
+      <button id="btnZoomIn" type="button">放大</button>
+      <button id="btnZoomOut" type="button">縮小</button>
+    
+      <input type="text" id="inputLatitude" placeholder="Latitude">
+      <input type="text" id="inputLongitude" placeholder="Longitude">
+      <input type="text" id="inputHeight" placeholder="Height">
+      <button id="btnFlyToXYZ" type="button">Fly to Point</button>
+</div>
+
+<div id="cesiumContainer" class="fullscreen-container"></div>
 
   <div id="cesiumContainer"></div>
   <script type="module">
@@ -33,7 +64,11 @@
               orientation: {
                   heading: Cesium.Math.toRadians(0.0),
                   pitch: Cesium.Math.toRadians(-15.0),
-              }})
+                           
+                }
+              }
+             
+ )    
 
       document.getElementById('btnFlyToTaipei').addEventListener('click', function () {
            alert('前往台北！');
@@ -73,11 +108,56 @@
 
       });
 
-      // Add Cesium OSM Buildings, a global 3D buildings layer.
-      const buildingTileset = await Cesium.createOsmBuildingsAsync();
-      viewer.scene.primitives.add(buildingTileset);   
+
+      
+        // Add Cesium OSM Buildings, a global 3D buildings layer.
+        const buildingTileset = await Cesium.createOsmBuildingsAsync();
+        viewer.scene.primitives.add(buildingTileset);   
+
+  // ... (your existing code)
+
+  document.getElementById('btnZoomIn').addEventListener('click', function () {
+      // Zoom In: Decrease the camera height
+      viewer.camera.moveForward(500); // Adjust the value according to your zoom preference
+  });
+  
+  document.getElementById('btnZoomOut').addEventListener('click', function () {
+      // Zoom Out: Increase the camera height
+      viewer.camera.moveBackward(500); // Adjust the value according to your zoom preference
+  });
+  
+
+
+document.getElementById('btnFlyToXYZ').addEventListener('click', function () {
+    // Get latitude, longitude, and height values from input fields
+    var latitude = parseFloat(document.getElementById('inputLatitude').value);
+    var longitude = parseFloat(document.getElementById('inputLongitude').value);
+    var height = parseFloat(document.getElementById('inputHeight').value);
+
+    // Validate input values (you can add more validation as needed)
+    if (isNaN(latitude) || isNaN(longitude) || isNaN(height)) {
+        alert('Please enter valid numeric values for Latitude, Longitude, and Height.');
+        return;
+    }
+
+    // Fly the camera to the specified point
+    viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, height),
+        orientation: {
+            heading: Cesium.Math.toRadians(0.0),
+            pitch: Cesium.Math.toRadians(-15.0),
+        }
+    });
+});
+
+// ... (rest of your code)
+
   </script>
+  
   </div>
+  </div>
+  </div>
+
 </body>
 
 </html>
