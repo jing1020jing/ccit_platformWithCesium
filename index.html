@@ -2,49 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+
   <!-- Include the CesiumJS JavaScript and CSS files -->
   <script src="https://cesium.com/downloads/cesiumjs/releases/1.108/Build/Cesium/Cesium.js"></script>
   
   <link href="https://cesium.com/downloads/cesiumjs/releases/1.108/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-  
+  <!-- 網站格式-->
   <style>
-  
     body, html {
         margin: 0;
         padding: 0;
         height: 100%;
         overflow: hidden;
+        position: relative;
     }
 
     .fullscreen-container {
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
     }
 
-  </style>
-  
+    #cesiumContainer {
+        width: 100vw; 
+        height: 100vh; 
+    }
+
+    .toolbar-container {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 999; /* 使工具列於最上層*/
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        
+    }
+
+
+
+    </style>
 </head>
 
 <body>
+  <div id="cesiumContainer" class="fullscreen-container"></div>
 
-  <div id="toolbar" class="toolbar">
-    <div id="cesiumContainer" class="fullscreen-container">
-      <button id="btnFlyToTaipei" type="button">前往台北</button>
-      <button id="btnFlyToTaichung" type="button">前往台中</button>
-      <button id="btnFlyToKaohsiung" type="button">前往高雄</button>
-    
+  <div id="toolbarContainer" class="toolbar-container">
+    <div id="toolbar" class="toolbar">
+        
+        
+       <!-- 前往指定地點 -->
+       <!-- <button id="btnFlyToccit1" type="button">天文台</button>
+       <button id="btnFlyToccit0" type="button">理工學院</button>
+  -->
+      <button id="btnFlyToccit1" type="button">天文台</button>
+      <button id="btnFlyToccit0" type="button">理工學院</button>
+        <!-- 放大縮小按鈕 -->
       <button id="btnZoomIn" type="button">放大</button>
       <button id="btnZoomOut" type="button">縮小</button>
-    
+        <!-- 輸入經緯度座標 -->
       <input type="text" id="inputLatitude" placeholder="Latitude">
       <input type="text" id="inputLongitude" placeholder="Longitude">
       <input type="text" id="inputHeight" placeholder="Height">
+        <!-- 前往經緯度按鈕 -->
       <button id="btnFlyToXYZ" type="button">Fly to Point</button>
-</div>
+      
+    </div>
+  </div>
+  
 
-<div id="cesiumContainer" class="fullscreen-container"></div>
-
+  
   <div id="cesiumContainer"></div>
+      
   <script type="module">
       // Your access token can be found at: https://ion.cesium.com/tokens.
       // This is the default access token from your ion account
@@ -52,83 +81,80 @@
       Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4NWJhZDVhYy0wYTIyLTQ1Y2YtODg3Yi00OTNlZDU2OGExN2EiLCJpZCI6MTY1OTQwLCJpYXQiOjE2OTQ1MDI0NTJ9.i4nK7nO3cRuAf7qEcxugViRX2UnCrCXR3pRwd7htz9Y';
 
       // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
+    
+    // 加載全球地形圖
       const viewer = new Cesium.Viewer('cesiumContainer',
           {
               terrain: Cesium.Terrain.fromWorldTerrain(),
           }
       );
+        // 加載WMS
+        const provider = new Cesium.WebMapServiceImageryProvider({
+        url : 'https://wms.nlsc.gov.tw/wms',
+        layers : 'PHOTO2',
+        proxy: new Cesium.DefaultProxy('/proxy/')
+        });
 
-      // Fly the camera to San Francisco at the given longitude, latitude, and height.
+        const imageryLayer = new Cesium.ImageryLayer(provider);
+        viewer.imageryLayers.add(imageryLayer);
+        // 加入openstreetmap建物模型
+        const osmBuildingsTileset = await Cesium.createOsmBuildingsAsync();
+        viewer.scene.primitives.add(osmBuildingsTileset);
+
+
+
+
+      // Fly the camera to ccit at the given longitude, latitude, and height.
       viewer.camera.flyTo({
-              destination: Cesium.Cartesian3.fromDegrees(121.250059832782, 24.20496875917415, 8000),
+              destination: Cesium.Cartesian3.fromDegrees(  121.25997398629353,24.88435539748394, 800),
               orientation: {
-                  heading: Cesium.Math.toRadians(0.0),
-                  pitch: Cesium.Math.toRadians(-15.0),
-                           
+                  heading: Cesium.Math.toRadians(130.0),
+                  pitch: Cesium.Math.toRadians(-30.0),      
                 }
               }
              
  )    
 
-      document.getElementById('btnFlyToTaipei').addEventListener('click', function () {
-           alert('前往台北！');
-          // Fly the camera to San Francisco at the given longitude, latitude, and height.
+        document.getElementById('btnFlyToccit0').addEventListener('click', function () {
+        // Fly the camera to 理工學院 at the given longitude, latitude, and height.
           viewer.camera.flyTo({
-              destination: Cesium.Cartesian3.fromDegrees(121.56444501316045, 25.03088782965679, 1000),
-              orientation: {
-                  heading: Cesium.Math.toRadians(0.0),
-                  pitch: Cesium.Math.toRadians(-15.0),
-              }
-          });
-
-      });
-      document.getElementById('btnFlyToTaichung').addEventListener('click', function () {
-           alert('前往台中！');
-          // Fly the camera to San Francisco at the given longitude, latitude, and height.
-          viewer.camera.flyTo({
-              destination: Cesium.Cartesian3.fromDegrees( 120.64057007971904, 24.163069420254462, 1000),
-              orientation: {
-                  heading: Cesium.Math.toRadians(0.0),
-                  pitch: Cesium.Math.toRadians(-15.0),
-              }
-          });
+          destination: Cesium.Cartesian3.fromDegrees(  121.25997398629353,24.88435539748394, 800),
+          orientation: {
+           heading: Cesium.Math.toRadians(130.0),
+           pitch: Cesium.Math.toRadians(-30.0),      
+             }
+        }
+                    
+ )    
 
       });
 
-      document.getElementById('btnFlyToKaohsiung').addEventListener('click', function () {
-           alert('前往高雄！');
-          // Fly the camera to San Francisco at the given longitude, latitude, and height.
+       document.getElementById('btnFlyToccit1').addEventListener('click', function () {
+      // Fly the camera to 天文台 at the given longitude, latitude, and height.
           viewer.camera.flyTo({
-              destination: Cesium.Cartesian3.fromDegrees( 120.30424161252664,22.61111580943805,  1000),
-              orientation: {
-                  heading: Cesium.Math.toRadians(0.0),
-                  pitch: Cesium.Math.toRadians(-15.0),
-              }
-          });
-
+          destination: Cesium.Cartesian3.fromDegrees( 121.27157183847466,24.876578922494247,250),
+          orientation: {
+            heading: Cesium.Math.toRadians(90.0),
+            pitch: Cesium.Math.toRadians(-30.0),
+          }
+      });
       });
 
+  
 
-      
-        // Add Cesium OSM Buildings, a global 3D buildings layer.
-        const buildingTileset = await Cesium.createOsmBuildingsAsync();
-        viewer.scene.primitives.add(buildingTileset);   
+    
+     
 
-  // ... (your existing code)
-
-  document.getElementById('btnZoomIn').addEventListener('click', function () {
+    document.getElementById('btnZoomIn').addEventListener('click', function () {
       // Zoom In: Decrease the camera height
       viewer.camera.moveForward(500); // Adjust the value according to your zoom preference
   });
   
-  document.getElementById('btnZoomOut').addEventListener('click', function () {
+    document.getElementById('btnZoomOut').addEventListener('click', function () {
       // Zoom Out: Increase the camera height
       viewer.camera.moveBackward(500); // Adjust the value according to your zoom preference
   });
-  
-
-
-document.getElementById('btnFlyToXYZ').addEventListener('click', function () {
+    document.getElementById('btnFlyToXYZ').addEventListener('click', function () {
     // Get latitude, longitude, and height values from input fields
     var latitude = parseFloat(document.getElementById('inputLatitude').value);
     var longitude = parseFloat(document.getElementById('inputLongitude').value);
@@ -147,13 +173,178 @@ document.getElementById('btnFlyToXYZ').addEventListener('click', function () {
             heading: Cesium.Math.toRadians(0.0),
             pitch: Cesium.Math.toRadians(-15.0),
         }
+
     });
 });
 
-// ... (rest of your code)
+var cesiumContainer = document.getElementById('cesiumContainer');
+
+    const tileset = viewer.scene.primitives.add(
+    await Cesium.Cesium3DTileset.fromIonAssetId(2329591)
+    );
+
+  // Information about the currently highlighted feature
+const highlighted = {
+  feature: undefined,
+  originalColor: new Cesium.Color(),
+};
+
+// Color a feature yellow on hover.
+viewer.screenSpaceEventHandler.setInputAction(function onMouseMove(
+  movement
+) {
+  // If a feature was previously highlighted, undo the highlight
+  if (Cesium.defined(highlighted.feature)) {
+    highlighted.feature.color = highlighted.originalColor;
+    highlighted.feature = undefined;
+  }
+
+  // Pick a new feature
+  const pickedFeature = viewer.scene.pick(movement.endPosition);
+  if (!Cesium.defined(pickedFeature)) {
+    return;
+  }
+
+  // Highlight the feature
+  highlighted.feature = pickedFeature;
+  Cesium.Color.clone(pickedFeature.color, highlighted.originalColor);
+  pickedFeature.color = Cesium.Color.RED;
+},
+Cesium.ScreenSpaceEventType.MOUSE_MOVE); 
+
+
+
+
+// const scene = viewer.scene;
+// const canvas = viewer.canvas;
+// canvas.setAttribute("tabindex", "0"); // needed to put focus on the canvas
+// canvas.onclick = function () {
+//   canvas.focus();
+// };
+// const ellipsoid = scene.globe.ellipsoid;
+
+
+// // disable the default event handlers
+// scene.screenSpaceCameraController.enableRotate = false;
+// scene.screenSpaceCameraController.enableTranslate = false;
+// scene.screenSpaceCameraController.enableZoom = false;
+// scene.screenSpaceCameraController.enableTilt = false;
+// scene.screenSpaceCameraController.enableLook = false;
+
+// let startMousePosition;
+// let mousePosition;
+// const flags = {
+//   looking: false,
+//   moveForward: false,
+//   moveBackward: false,
+//   moveUp: false,
+//   moveDown: false,
+//   moveLeft: false,
+//   moveRight: false,
+// };
+
+// const handler = new Cesium.ScreenSpaceEventHandler(canvas);
+
+// handler.setInputAction(function (movement) {
+//   flags.looking = true;
+//   mousePosition = startMousePosition = Cesium.Cartesian3.clone(
+//     movement.position
+//   );
+// }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
+
+// handler.setInputAction(function (movement) {
+//   mousePosition = movement.endPosition;
+// }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+// handler.setInputAction(function (position) {
+//   flags.looking = false;
+// }, Cesium.ScreenSpaceEventType.LEFT_UP);
+
+// function getFlagForKeyCode(keyCode) {
+//   switch (keyCode) {
+//     case "W".charCodeAt(0):
+//       return "moveForward";
+//     case "S".charCodeAt(0):
+//       return "moveBackward";
+//     case "Q".charCodeAt(0):
+//       return "moveUp";
+//     case "E".charCodeAt(0):
+//       return "moveDown";
+//     case "D".charCodeAt(0):
+//       return "moveRight";
+//     case "A".charCodeAt(0):
+//       return "moveLeft";
+//     default:
+//       return undefined;
+//   }
+// }
+
+// document.addEventListener(
+//   "keydown",
+//   function (e) {
+//     const flagName = getFlagForKeyCode(e.keyCode);
+//     if (typeof flagName !== "undefined") {
+//       flags[flagName] = true;
+//     }
+//   },
+//   false
+// );
+
+// document.addEventListener(
+//   "keyup",
+//   function (e) {
+//     const flagName = getFlagForKeyCode(e.keyCode);
+//     if (typeof flagName !== "undefined") {
+//       flags[flagName] = false;
+//     }
+//   },
+//   false
+// );
+
+// viewer.clock.onTick.addEventListener(function (clock) {
+//   const camera = viewer.camera;
+
+//   if (flags.looking) {
+//     const width = canvas.clientWidth;
+//     const height = canvas.clientHeight;
+
+//     // Coordinate (0.0, 0.0) will be where the mouse was clicked.
+//     const x = (mousePosition.x - startMousePosition.x) / width;
+//     const y = -(mousePosition.y - startMousePosition.y) / height;
+
+//     const lookFactor = 0.05;
+//     camera.lookRight(x * lookFactor);
+//     camera.lookUp(y * lookFactor);
+//   }
+
+//   // Change movement speed based on the distance of the camera to the surface of the ellipsoid.
+//   const cameraHeight = ellipsoid.cartesianToCartographic(
+//     camera.position
+//   ).height;
+//   const moveRate = cameraHeight / 100.0;
+
+//   if (flags.moveForward) {
+//     camera.moveForward(moveRate);
+//   }
+//   if (flags.moveBackward) {
+//     camera.moveBackward(moveRate);
+//   }
+//   if (flags.moveUp) {
+//     camera.moveUp(moveRate);
+//   }
+//   if (flags.moveDown) {
+//     camera.moveDown(moveRate);
+//   }
+//   if (flags.moveLeft) {
+//     camera.moveLeft(moveRate);
+//   }
+//   if (flags.moveRight) {
+//     camera.moveRight(moveRate);
+//   }
+// });
+
 
   </script>
-  
   </div>
   </div>
   </div>
