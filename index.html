@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <title>理工學院天文台展示成果</title>
 
   <!-- Include the CesiumJS JavaScript and CSS files -->
   <script src="https://cesium.com/downloads/cesiumjs/releases/1.108/Build/Cesium/Cesium.js"></script>
-  
   <link href="https://cesium.com/downloads/cesiumjs/releases/1.108/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <!-- 網站格式-->
+  
   <style>
     body, html {
         margin: 0;
@@ -31,30 +32,57 @@
         position: absolute;
         top: 10px;
         left: 10px;
-        z-index: 999; /* 使工具列於最上層*/
+        z-index: 990; /* 使工具列於最上層*/
         background-color: rgba(255, 255, 255, 0.9);
         padding: 10px;
         border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);   
     }
 
+#sidebar {
+  width: 200px;
+  height: 100vh;
+  background-color: #f1f1f1;
+  position: fixed;
+  left: -20%; /* 視窗寬度的20% */
+  transition: left 0.3s ease;
+}
+
+  
+  #sidebar ul {
+    z-index: 9999; /* 使工具列於最上層*/
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  #sidebar ul li {
+    padding: 999px;
+    z-index: 9; /* 使工具列於最上層*/
+    text-align: center;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  #toggleBtn {
+  position: fixed;
+  left: 2%; /* 視窗寬度的2% */
+  top: 1%; /* 視窗高度的1% */
+  z-index: 2;
+}
 
 
     </style>
 </head>
 
 <body>
+
+  <div id="cesiumContainer"></div>
   <div id="cesiumContainer" class="fullscreen-container"></div>
+  
+  <button id="toggleBtn">展開清單</button>
 
   <div id="toolbarContainer" class="toolbar-container">
-    <div id="toolbar" class="toolbar">
-        
-        
+    <div id="toolbar" class="toolbar">     
        <!-- 前往指定地點 -->
-       <!-- <button id="btnFlyToccit1" type="button">天文台</button>
-       <button id="btnFlyToccit0" type="button">理工學院</button>
-  -->
       <button id="btnFlyToccit1" type="button">天文台</button>
       <button id="btnFlyToccit0" type="button">理工學院</button>
         <!-- 放大縮小按鈕 -->
@@ -66,13 +94,10 @@
       <input type="text" id="inputHeight" placeholder="Height">
         <!-- 前往經緯度按鈕 -->
       <button id="btnFlyToXYZ" type="button">Fly to Point</button>
-      
     </div>
   </div>
-  
 
-  
-  <div id="cesiumContainer"></div>
+
       
   <script type="module">
       // Your access token can be found at: https://ion.cesium.com/tokens.
@@ -97,6 +122,7 @@
 
         const imageryLayer = new Cesium.ImageryLayer(provider);
         viewer.imageryLayers.add(imageryLayer);
+        
         // 加入openstreetmap建物模型
         const osmBuildingsTileset = await Cesium.createOsmBuildingsAsync();
         viewer.scene.primitives.add(osmBuildingsTileset);
@@ -211,6 +237,22 @@ viewer.screenSpaceEventHandler.setInputAction(function onMouseMove(
   pickedFeature.color = Cesium.Color.RED;
 },
 Cesium.ScreenSpaceEventType.MOUSE_MOVE); 
+
+const sidebar = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('toggleBtn');
+
+toggleBtn.addEventListener('click', () => {
+  const sidebarLeft = parseInt(window.getComputedStyle(sidebar).left);
+  if (sidebarLeft < 0) {
+    sidebar.style.left = '0';
+    toggleBtn.style.left = '210px'; // 按鈕向右橫移200px
+    toggleBtn.textContent = '關閉清單';
+  } else {
+    sidebar.style.left = '-200px';
+    toggleBtn.style.left = '10px'; // 按鈕回到原始位置
+    toggleBtn.textContent = '展開清單';
+  }
+});
 
 
 
